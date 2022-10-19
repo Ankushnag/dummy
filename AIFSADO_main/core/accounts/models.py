@@ -3,14 +3,15 @@ from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
 
 class User(AbstractUser):
-    is_emailverified = models.BooleanField(default=False)
+    # pasword2=models.CharField(max_length=50)
+    is_email_verified = models.BooleanField(default=False)
 
 class UserType(models.Model):
-    user=models.OneToOneField(to=User,on_delete=models.SET_NULL)
+    user=models.OneToOneField(to=User,on_delete=models.SET_NULL, null=True)
     user_type=models.IntegerField()
 
 class UserProfile(models.Model):
-    user_type=models.ForeignKey(to=UserType,on_delete=models.SET_NULL)
+    user_type=models.ForeignKey(to=UserType,on_delete=models.SET_NULL,null=True)
     first_name=models.CharField(max_length=50)
     last_name=models.CharField(max_length=50)
     work_number_1=models.CharField(max_length=10)
@@ -43,7 +44,7 @@ class UserProfile(models.Model):
     state_id=models.CharField(max_length=100)
     zip_code_id=models.CharField(max_length=6)
 
-class User_Log(models.Model):
-    user_type = models.ForeignKey(to=UserType, on_delete=models.SET_NULL)
-    action_type = models.BooleanField(default=False)
-    date_time = 
+# class User_Log(models.Model):
+#     user_type = models.ForeignKey(to=UserType, on_delete=models.SET_NULL)
+#     action_type = models.BooleanField(default=False)
+#     date_time = 

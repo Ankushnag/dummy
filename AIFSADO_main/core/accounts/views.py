@@ -50,12 +50,11 @@ class UserRegistrationsView(APIView):
             return Response({'msg':'password, password2, user_type is Required'})
     
 
-
 # login 
 class UserLoginView(APIView):
     def post(self,request,format=None):
         obj=request.data
-        if 'username' in obj and 'password' in obj:
+        if 'username' in obj and 'password' in obj and 'user_log' in obj:
             if 'action_type' in obj['user_log'] and 'date_time' in obj['user_log'] and 'ip_address' in obj['user_log'] and 'longitude' in obj['user_log'] and 'latitude' in obj['user_log'] and 'mac_address' in obj['user_log'] and 'location' in obj['user_log'] :
                 if User.objects.filter(username=obj['username']):
                     user_object=User.objects.get(username=obj['username'])
@@ -75,10 +74,8 @@ class UserLoginView(APIView):
             else:
                 return Response({'message : action_type, date_time, ip_address, longitude, latitude, mac_address, location needed '}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'message : username and password needed'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message : username and password and user_log needed'}, status=status.HTTP_400_BAD_REQUEST)
 
-
-        
 
 class UserLogoutView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -104,7 +101,20 @@ class UserProfileView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
     
     def post(self,request):
+        user = request.user
+        usertypeobj=UserType.objects.get(user=user)
         body=request.data
+        if 'first_name' in body and 'last_name' in body and 'phone_number' in body and 'type_of_account' in body and 'town' in body and 'state' in body and 'zipcode' in body:
+            if UserProfile.objects.filter(work_number_1=body['phone_number']):
+                return Response({'meg':"this Phone number is alreay taken"})
+            else:
+                UserProfile.objects.create(
+                    user_type=usertypeobj, first_name=body['first_name'], last_name=body['last_name'], work_number_1=body['phone_number'], 
+                    type_of_account=body['type_of_account'], town_id=body['town'], state_id=body['state'], zip_code_id=body['zipcode'],
+                )
+                return Response({'meg':"success"})
+        else:
+            return Response({'meg':"first_name, last_name, phone_number, type_of_account, town, state, zipcode needed "})
 
 
 

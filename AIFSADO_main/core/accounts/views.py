@@ -22,47 +22,39 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
+  
 
 # Registration
 class UserRegistrationsView(APIView):
-    renderer_classes = [UserRenderer]
-    def post(self,request,format=None):
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        
-        if 'password' in body:
-            if 'pasword2' in body:
-
-                if body['password'] == body['pasword2']:
+    def post(self,request,format=None): 
+        body = request.data
+        if 'password' in body and 'password2' in body and 'user_type' in body:
+                if body['password'] == body['password2']:
                     print('yes')
-                    del body['pasword2']
+                    del body['password2']
                     print(body)
 
                     serializer = UserRegistrationSerializer(data = body)
 
                     if serializer.is_valid(raise_exception = True):   #remove the the raise_exception = True
                         user = serializer.save()
-                        token = get_tokens_for_user(user)
-                        return Response({'token':token,'msg':'Registration Sucess'},
+                        UserType.objects.create(user=user,user_type=body['user_type'])
+                        return Response({'msg':'Registration Sucess'},
                         status = status.HTTP_201_CREATED)
                         # after the remove the raise_exceptions = True then the that place print(serializer.errors)
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
                 else:
                     return Response({'Password Not Matched'})
-
-            else:
-                return Response({'pasword2':'is Required'})
         else:
-            return Response({'password':'is Required'})
+            return Response({'msg':'password, password2, user_type is Required'})
+    
 
 
 # login 
 class UserLoginView(APIView):
-    renderer_classes = [UserRenderer]
     def post(self,request,format=None):
         obj=request.data
-
         if 'username' in obj and 'password' in obj:
             if User.objects.filter(username=obj['username']):
                 user_object=User.objects.get(username=obj['username'])
@@ -71,8 +63,9 @@ class UserLoginView(APIView):
                     token = get_tokens_for_user(user)
                     login(request, user)
                     serializer=UserLoginSerializer(user)
+                    usertypeobj=UserType.objects.get(user=user)
                     print('Login Successfully')
-                    return Response({'data':serializer.data,'token':token,'msg':'login Success'}, status = status.HTTP_200_OK)
+                    return Response({'user_info':{'id':user.id,'username':user.username,'usertypeobj':usertypeobj.user_type},'token':token,'msg':'login Success'}, status = status.HTTP_200_OK)
                 else:
                     return Response({'msg : Credentials Not Matched'})
             return Response({'detail : No active accout found with given credentials'}, status=status.HTTP_400_BAD_REQUEST)
@@ -105,6 +98,10 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(request.user)
         # if serializer.is_valid(raise_exception = True):
         return Response(serializer.data, status = status.HTTP_200_OK)
+    
+    def post(self,request):
+        body=request.data
+        
 
 
 # change Password

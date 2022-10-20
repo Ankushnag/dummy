@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
 
 class User(AbstractUser):
-    # pasword2=models.CharField(max_length=50)
     is_email_verified = models.BooleanField(default=False)
 
 class UserType(models.Model):

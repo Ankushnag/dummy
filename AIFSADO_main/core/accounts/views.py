@@ -56,19 +56,24 @@ class UserLoginView(APIView):
     def post(self,request,format=None):
         obj=request.data
         if 'username' in obj and 'password' in obj:
-            if User.objects.filter(username=obj['username']):
-                user_object=User.objects.get(username=obj['username'])
-                user=authenticate(username=user_object.username,password=obj['password'])
-                if user is not None:
-                    token = get_tokens_for_user(user)
-                    login(request, user)
-                    serializer=UserLoginSerializer(user)
-                    usertypeobj=UserType.objects.get(user=user)
-                    print('Login Successfully')
-                    return Response({'user_info':{'id':user.id,'username':user.username,'usertypeobj':usertypeobj.user_type},'token':token,'msg':'login Success'}, status = status.HTTP_200_OK)
-                else:
-                    return Response({'msg : Credentials Not Matched'})
-            return Response({'detail : No active accout found with given credentials'}, status=status.HTTP_400_BAD_REQUEST)
+            if 'action_type' in obj['user_log'] and 'date_time' in obj['user_log'] and 'ip_address' in obj['user_log'] and 'longitude' in obj['user_log'] and 'latitude' in obj['user_log'] and 'mac_address' in obj['user_log'] and 'location' in obj['user_log'] :
+                if User.objects.filter(username=obj['username']):
+                    user_object=User.objects.get(username=obj['username'])
+                    user=authenticate(username=user_object.username,password=obj['password'])
+                    if user is not None:
+                        token = get_tokens_for_user(user)
+                        login(request, user)
+                        usertypeobj=UserType.objects.get(user=user)
+                        User_Log.objects.create(user_type=usertypeobj,action_type=obj['user_log']['action_type'],
+                        date_time=obj['user_log']['date_time'],ip_address=obj['user_log']['ip_address'],
+                        longitude=obj['user_log']['longitude'],latitude=obj['user_log']['latitude'],
+                        mac_address=obj['user_log']['mac_address'],location=obj['user_log']['location'])
+                        return Response({'user_info':{'id':user.id,'username':user.username,'usertypeobj':usertypeobj.user_type},'token':token,'msg':'login Success'}, status = status.HTTP_200_OK)
+                    else:
+                        return Response({'msg : Credentials Not Matched'})
+                return Response({'detail : No active accout found with given credentials'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'message : action_type, date_time, ip_address, longitude, latitude, mac_address, location needed '}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'message : username and password needed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -77,7 +82,6 @@ class UserLoginView(APIView):
 
 class UserLogoutView(APIView):
     permission_classes = (IsAuthenticated,)
-
     def post(self, request):
         # try:
             refresh_token = request.data["refresh_token"]
@@ -101,7 +105,7 @@ class UserProfileView(APIView):
     
     def post(self,request):
         body=request.data
-        
+
 
 
 # change Password

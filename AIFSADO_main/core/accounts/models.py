@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
+from macaddress.fields import MACAddressField
 
 class User(AbstractUser):
     is_email_verified = models.BooleanField(default=False)
@@ -44,11 +45,11 @@ class UserProfile(models.Model):
     zip_code_id=models.CharField(max_length=6)
 
 class User_Log(models.Model):
-    user_type = models.ForeignKey(to=UserType, on_delete=models.SET_NULL)
+    user_type = models.ForeignKey(to=UserType, on_delete=models.CASCADE)
     action_type = models.BooleanField(default=False)
     date_time = models.DateTimeField()
     ip_address = models.GenericIPAddressField()
     longitude = models.CharField(max_length=50)
     latitude = models.CharField(max_length=50)
-    mac_address = models.GenericIPAddressField()
+    mac_address = MACAddressField()
     location = models.TextField()

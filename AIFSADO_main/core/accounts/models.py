@@ -43,7 +43,12 @@ class UserProfile(models.Model):
     state_id=models.CharField(max_length=100)
     zip_code_id=models.CharField(max_length=6)
 
-# class User_Log(models.Model):
-#     user_type = models.ForeignKey(to=UserType, on_delete=models.SET_NULL)
-#     action_type = models.BooleanField(default=False)
-#     date_time = 
+class User_Log(models.Model):
+    user_type = models.ForeignKey(to=UserType, on_delete=models.SET_NULL)
+    action_type = models.BooleanField(default=False)
+    date_time = models.DateTimeField()
+    ip_address = models.GenericIPAddressField()
+    longitude = models.CharField(max_length=50)
+    latitude = models.CharField(max_length=50)
+    mac_address = models.GenericIPAddressField()
+    location = models.TextField()

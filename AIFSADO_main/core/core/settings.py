@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'accounts',
+    'master',
+    'property',
     'ckeditor',
     "corsheaders",
     'rest_framework_simplejwt',

@@ -44,6 +44,8 @@ class UserProfile(models.Model):
     state_id=models.CharField(max_length=100)
     zip_code_id=models.CharField(max_length=6)
 
+    
+
 class User_Log(models.Model):
     user_type = models.ForeignKey(to=UserType, on_delete=models.CASCADE)
     action_type = models.BooleanField(default=False)

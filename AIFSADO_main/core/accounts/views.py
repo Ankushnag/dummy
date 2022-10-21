@@ -12,7 +12,9 @@ from .serializers import *
 from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-
+from rest_framework.parsers import MultiPartParser, FormParser
+import os
+import uuid
 
 # generating token Manually
 def get_tokens_for_user(user):
@@ -91,7 +93,6 @@ class UserLogoutView(APIView):
 
 # profile
 class UserProfileView(APIView):
-
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
 
@@ -127,3 +128,28 @@ class UserChangePasswordView(APIView):
         if serializer.is_valid(raise_exception = True):
             return Response({'msg':'Password Change Sucessfully'}, status = status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangeProfilePictureView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    def put(self, request, format = None):
+        user= request.user
+        usertypeobj=UserType.objects.get(user=user)
+        if request.FILES.get("image", None) is not None:
+                img = request.FILES["image"]
+                if UserProfile.objects.filter(user_type=usertypeobj):
+                    userprofileobj=UserProfile.objects.get(user_type=usertypeobj)
+                else:
+                    return Response({'msg':"UserProfile id is invalid"})
+                userprofileobj.profile_image=img
+                userprofileobj.save()
+                return Response({'msg':"profile image updated"})
+        else:   
+                return Response({'msg':"Profile image not found"})
+        
+
+            
+            
+        
+        

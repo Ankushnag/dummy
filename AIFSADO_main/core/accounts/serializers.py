@@ -47,3 +47,9 @@ class UserChangePasswordSerializer(serializers.Serializer):
         user.set_password(password)
         user.save()
         return attrs
+
+class ChangeProfileImage(serializers.Serializer):
+    image_url = serializers.ImageField(required=False)
+    class Meta:
+        model = UserProfile
+        fields = ['id','user_type' 'profile_image']

@@ -24,7 +24,16 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
-  
+
+def get_user_usertype_userprofile(request):
+    user=request.user
+    usertype=UserType.objects.get(user=user)
+    if UserProfile.objects.filter(user_type=usertype):
+        userprofile=UserProfile.objects.get(user_type=usertype)
+        return user,usertype, userprofile
+    else:
+        return user,usertype,False
+
 
 # Registration
 class UserRegistrationsView(APIView):
@@ -79,27 +88,52 @@ class UserLoginView(APIView):
             return Response({'message : username and password and user_log needed'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+#logout
 class UserLogoutView(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self, request):
-        # try:
+        try:
             refresh_token = request.data["refresh_token"]
             token = RefreshToken(refresh_token)
             token.blacklist()
             print(request.data)
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        # except Exception as e:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 # profile
 class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
-
     def get(self, request, format = None):
-        serializer = UserProfileSerializer(request.user)
-        # if serializer.is_valid(raise_exception = True):
-        return Response(serializer.data, status = status.HTTP_200_OK)
+        user,usertype,userprofile=get_user_usertype_userprofile(request)
+        print(userprofile)
+        if userprofile:
+            if usertype.user_type==1:
+                response={
+                        "user":{'id':user.id,'username':user.email},
+                        "user_type":{"id":usertype.id,"user_type":usertype.user_type},
+                        "profile":{"id":userprofile.id,"first_name":userprofile.first_name,
+                                    "last_name":userprofile.last_name,
+                                    "work_number1":userprofile.work_number_1,
+                                    "is_work_numer_1_valid":userprofile.is_work_numer_1_valid,
+                                    "type_of_account":userprofile.type_of_account,
+                                    "town":userprofile.town_id,
+                                    "state":userprofile.state_id,
+                                    "zipcode":userprofile.zip_code_id,
+                                  }
+                    }
+                return Response(response, status = status.HTTP_200_OK)
+            else:
+                pass
+        else:
+            response={
+                        "user":{'id':user.id,'username':user.email},
+                        "user_type":{"id":usertype,"user_type":usertype.user_type},
+                        "profile":"profile not created yet"
+                    }
+            return Response(response, status = status.HTTP_200_OK)
+            
     
     def post(self,request):
         user = request.user
@@ -107,15 +141,15 @@ class UserProfileView(APIView):
         body=request.data
         if 'first_name' in body and 'last_name' in body and 'phone_number' in body and 'type_of_account' in body and 'town' in body and 'state' in body and 'zipcode' in body:
             if UserProfile.objects.filter(work_number_1=body['phone_number']):
-                return Response({'meg':"this Phone number is alreay taken"})
+                return Response({'msg':"this Phone number is alreay taken"})
             else:
                 UserProfile.objects.create(
                     user_type=usertypeobj, first_name=body['first_name'], last_name=body['last_name'], work_number_1=body['phone_number'], 
                     type_of_account=body['type_of_account'], town_id=body['town'], state_id=body['state'], zip_code_id=body['zipcode'],
                 )
-                return Response({'meg':"success"})
+                return Response({'msg':"success"})
         else:
-            return Response({'meg':"first_name, last_name, phone_number, type_of_account, town, state, zipcode needed "})
+            return Response({'msg':"first_name, last_name, phone_number, type_of_account, town, state, zipcode needed "})
 
 
 
@@ -130,6 +164,7 @@ class UserChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+#Add or change ProfilePicture
 class ChangeProfilePictureView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
@@ -147,7 +182,6 @@ class ChangeProfilePictureView(APIView):
                 return Response({'msg':"profile image updated"})
         else:   
                 return Response({'msg':"Profile image not found"})
-        
 
             
             
